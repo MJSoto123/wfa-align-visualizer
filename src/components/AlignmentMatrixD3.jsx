@@ -7,8 +7,9 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
   const svgRef = useRef();
 
   useEffect(() => {
-    const width = 3 * (seqB.length + 1) * cellSize + 60;
-    const height = (seqA.length + 1) * cellSize + 40;
+    const matrixMargin = 80;
+    const width = 3 * (seqB.length + 2) * cellSize + 2 * matrixMargin;
+    const height = (seqA.length + 2) * cellSize + 100;
 
     const svg = d3
       .select(svgRef.current)
@@ -20,11 +21,12 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
     const matrixNames = ["M", "I", "D"];
     const xOffset = {
       M: 0,
-      I: (seqB.length + 1) * cellSize + 20,
-      D: 2 * (seqB.length + 1) * cellSize + 40,
+      I: (seqB.length + 2) * cellSize + matrixMargin,
+      D: 2 * (seqB.length + 2) * cellSize + 2 * matrixMargin,
     };
 
-    // Añadir marcador para flechas
+    const yOffset = 40;
+
     svg
       .append("defs")
       .append("marker")
@@ -41,24 +43,52 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
 
     const arrowsGroup = svg.append("g").attr("class", "trace-arrows");
 
-    // Dibujar las 3 matrices
     matrixNames.forEach((name) => {
       const group = svg.append("g").attr("class", `matrix-${name}`);
 
       group
         .append("text")
-        .attr("x", xOffset[name] + (seqB.length * cellSize) / 2)
-        .attr("y", 15)
+        .attr("x", xOffset[name] + (seqB.length + 1) * cellSize / 2)
+        .attr("y", yOffset - 10)
         .attr("text-anchor", "middle")
         .attr("font-weight", "bold")
         .text(`Matrix ${name}`);
 
+      // Letras de seqB
+      for (let j = 0; j <= seqB.length; j++) {
+        const label = j === 0 ? "" : seqB[j - 1];
+        group
+          .append("text")
+          .attr("x", xOffset[name] + (j + 1) * cellSize + cellSize / 2)
+          .attr("y", yOffset + cellSize - 6)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 12)
+          .attr("fill", "#000")
+          .text(label);
+      }
+
+      // Letras de seqA
+      for (let i = 0; i <= seqA.length; i++) {
+        const label = i === 0 ? "" : seqA[i - 1];
+        group
+          .append("text")
+          .attr("x", xOffset[name] + cellSize * 0.9)
+          .attr("y", yOffset + (i + 2) * cellSize - cellSize / 2 + 4)
+          .attr("text-anchor", "end")
+          .attr("font-size", 12)
+          .attr("fill", "#000")
+          .text(label);
+      }
+
       for (let i = 0; i <= seqA.length; i++) {
         for (let j = 0; j <= seqB.length; j++) {
+          const x = xOffset[name] + (j + 1) * cellSize;
+          const y = yOffset + (i + 1) * cellSize;
+
           group
             .append("rect")
-            .attr("x", xOffset[name] + j * cellSize)
-            .attr("y", 30 + i * cellSize)
+            .attr("x", x)
+            .attr("y", y)
             .attr("width", cellSize)
             .attr("height", cellSize)
             .attr("fill", "white")
@@ -67,8 +97,8 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
 
           group
             .append("text")
-            .attr("x", xOffset[name] + j * cellSize + cellSize / 2)
-            .attr("y", 30 + i * cellSize + cellSize / 2 + 4)
+            .attr("x", x + cellSize / 2)
+            .attr("y", y + cellSize / 2 + 4)
             .attr("text-anchor", "middle")
             .attr("font-size", 10)
             .attr("fill", "#000")
@@ -78,21 +108,17 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
       }
     });
 
-    let lastActive = {
-      M: new Set(),
-      I: new Set(),
-      D: new Set(),
-    };
+    let lastActive = { M: new Set(), I: new Set(), D: new Set() };
 
     function drawArrow(matrixName, fromI, fromJ, toI, toJ) {
       const xBase = xOffset[matrixName];
 
       arrowsGroup
         .append("line")
-        .attr("x1", xBase + fromJ * cellSize + cellSize / 2)
-        .attr("y1", 30 + fromI * cellSize + cellSize / 2)
-        .attr("x2", xBase + toJ * cellSize + cellSize / 2)
-        .attr("y2", 30 + toI * cellSize + cellSize / 2)
+        .attr("x1", xBase + (fromJ + 1) * cellSize + cellSize / 2)
+        .attr("y1", yOffset + (fromI + 1) * cellSize + cellSize / 2)
+        .attr("x2", xBase + (toJ + 1) * cellSize + cellSize / 2)
+        .attr("y2", yOffset + (toI + 1) * cellSize + cellSize / 2)
         .attr("stroke", "black")
         .attr("stroke-width", 1)
         .attr("marker-end", "url(#arrow)");
@@ -101,7 +127,6 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
     function drawWavefrontStep(step) {
       const { M, I, D } = step.wavefrontSnapshot;
 
-      // Resetear colores anteriores
       const resetMatrix = (name) => {
         for (const key of lastActive[name]) {
           const [i, j] = key.split("-").map(Number);
@@ -123,9 +148,7 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
 
           if (i >= 0 && j >= 0 && i <= seqA.length && j <= seqB.length) {
             d3.select(`#cell-${name}-${i}-${j}`).attr("fill", "#A5D6A7");
-
             d3.select(`#text-${name}-${i}-${j}`).text(offset);
-
             lastActive[name].add(key);
           }
         }
@@ -135,34 +158,20 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
       updateMatrix(I, "I");
       updateMatrix(D, "D");
 
-      console.log("🎯 Paso actual:", step);
-
-      // Dibujar flecha del backtrace
       if (step.from) {
         const { score: fromS, k: fromK, type: fromType } = step.from;
         const matrixName = step.type;
         const toI = step.i;
         const toJ = step.j;
 
-        // Buscar paso anterior real (NO en el snapshot)
         const fromStep = steps.find(
-          s => s.score === fromS && s.diagonal === fromK && s.type === fromType
+          (s) => s.score === fromS && s.diagonal === fromK && s.type === fromType
         );
 
         if (fromStep) {
           const fromI = fromStep.i;
           const fromJ = fromStep.j;
-
-          // Debug
-          console.log("↩️ Flecha:", {
-            type: matrixName,
-            from: [fromI, fromJ],
-            to: [toI, toJ],
-          });
-
           drawArrow(matrixName, fromI, fromJ, toI, toJ);
-        } else {
-          console.warn("❌ No se encontró fromStep para", step.from);
         }
       }
     }
@@ -181,8 +190,13 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
   }, [steps, seqA, seqB]);
 
   return (
-    <div className="overflow-auto">
-      <svg ref={svgRef}></svg>
+    <div className="w-full mt-8 overflow-auto rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="mb-4 text-center text-sm text-gray-600 font-medium">
+        Visualización de matrices de alineamiento (M, I, D)
+      </div>
+      <div className="flex justify-center overflow-auto">
+        <svg ref={svgRef}></svg>
+      </div>
     </div>
   );
 }
