@@ -20,6 +20,7 @@ export default function SequenceInput({ onRun }) {
       onRun(cleanA, cleanB);
     }
   };
+  
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 space-y-6">

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
+
 const cellSize = 25;
 
 export default function AlignmentMatrixD3({ steps, seqA, seqB }) {

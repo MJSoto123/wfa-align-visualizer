@@ -21,6 +21,7 @@ export function runWFAGapAffineExact(seqA, seqB, gapOpen = 2, gapExtend = 1) {
     return i;
   };
 
+  
   for (let s = 1; s <= maxScore; s++) {
     M[s] = {};
     I[s] = {};

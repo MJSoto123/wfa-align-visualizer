@@ -208,3 +208,4 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
     </div>
   );
 }
+
