@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-
 const cellSize = 25;
 
 export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
@@ -163,7 +162,8 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
         const toJ = step.j;
 
         const fromStep = steps.find(
-          (s) => s.score === fromS && s.diagonal === fromK && s.type === fromType
+          (s) =>
+            s.score === fromS && s.diagonal === fromK && s.type === fromType
         );
 
         if (fromStep) {
@@ -204,18 +204,22 @@ export default function AlignmentMatrixD3({ steps, seqA, seqB }) {
           <div className="flex items-center space-x-4">
             <button
               onClick={handlePrev}
-              className="px-4 py-1 bg-gray-200 text-sm rounded hover:bg-gray-300"
+              className="px-4 py-1 bg-gray-200 text-sm rounded hover:bg-gray-300 flex items-center gap-2"
             >
-              ◀ Paso anterior
+              <img src="/src/assets/atras.png" alt="prev" className="h-4 w-4" />
+              Paso anterior
             </button>
+
             <label className="text-sm font-medium text-gray-600">
               Paso {currentStep + 1} / {steps.length}
             </label>
+
             <button
               onClick={handleNext}
-              className="px-4 py-1 bg-gray-200 text-sm rounded hover:bg-gray-300"
+              className="px-4 py-1 bg-gray-200 text-sm rounded hover:bg-gray-300 flex items-center gap-2"
             >
-              Paso siguiente ▶
+              Paso siguiente
+              <img src="/src/assets/adelante.png" alt="next" className="h-4 w-4" />
             </button>
           </div>
           <input
